@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import '../features'
 import { getFeatures, isFeatureEnabled } from '@core/feature-registry'
 import { FeatureToggle } from '@shared/ui/FeatureToggle'
 import { t } from '@shared/utils/i18n'

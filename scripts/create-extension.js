@@ -19,6 +19,7 @@ function parseArgs() {
     content: true,
     background: true,
     changelog: true,
+    out: '',
     feature: '',
   }
 
@@ -41,6 +42,14 @@ function parseArgs() {
   }
 
   return result
+}
+
+function resolveOutputRoot(outArg) {
+  if (outArg && String(outArg).trim()) {
+    return path.resolve(String(outArg).trim())
+  }
+
+  return process.cwd()
 }
 
 const rl = readline.createInterface({
@@ -95,7 +104,19 @@ async function main() {
 
   const kebabName = kebabCase(extensionName)
   const pascalName = pascalCase(kebabName)
-  const targetDir = path.resolve(process.cwd(), kebabName)
+  const outputRoot = resolveOutputRoot(args.out)
+  const targetDir = path.join(outputRoot, kebabName)
+
+  if (!args.out) {
+    console.log('ℹ️  No --out provided. Using current directory as output root:')
+    console.log(`   ${outputRoot}\n`)
+  }
+
+  if (!fs.existsSync(outputRoot)) {
+    console.error(`❌ Output root does not exist: ${outputRoot}`)
+    console.error('Use --out "<path>" to set a valid output directory.')
+    process.exit(1)
+  }
 
   if (fs.existsSync(targetDir)) {
     console.error(`❌ Directory "${kebabName}" already exists`)
@@ -155,8 +176,9 @@ async function main() {
   }
 
   console.log(`✅ Extension "${kebabName}" created successfully!\n`)
+  console.log(`Location: ${targetDir}\n`)
   console.log(`Next steps:`)
-  console.log(`  cd ${kebabName}`)
+  console.log(`  cd "${targetDir}"`)
   console.log(`  npm install`)
   console.log(`  npm run dev`)
   console.log(`\nLoad "dist/" folder in chrome://extensions/ (Developer mode)`)
@@ -304,7 +326,8 @@ export function init${pascalFeature}() {
   const contentIndex = path.join(targetDir, 'src', 'content', 'index.ts')
   fs.writeFileSync(
     contentIndex,
-    `import { init${pascalFeature} } from '../features/${featureName}/content'
+    `import '../features'
+import { init${pascalFeature} } from '../features/${featureName}/content'
 import { isFeatureEnabled } from '@core/feature-registry'
 
 const run = async () => {

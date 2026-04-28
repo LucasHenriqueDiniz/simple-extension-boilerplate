@@ -1,134 +1,105 @@
-# Chrome Extension Boilerplate — AGENTS.md
+# Chrome Extension Boilerplate
 
-Contexto global para desenvolvimento de extensões Chrome com este boilerplate.
+Global context for OpenCode when working in this repository.
 
 ## Stack
 
-- Vite (build tool)
-- React 19 (popup/options UI)
+- Vite
+- React 19 (popup/options/changelog UI)
 - TypeScript
 - Tailwind CSS
-- Manifest V3
+- Chrome Manifest V3
 
-## Arquitetura
+## Architecture
 
-### Single Project (não é monorepo)
-
-Tudo em `src/`:
+Single project layout (no monorepo):
 
 ```
 src/
-  background/     → service worker (MV3)
-  content/        → content script (roda nas páginas web)
-  popup/          → popup HTML + React
-  options/        → options page HTML + React
-  changelog/      → página de changelog/versões (opcional)
-  core/           → utilitários compartilhados
-    config.ts     → nome, versão, debug flag
-    storage.ts    → wrapper chrome.storage.sync/local
-    messaging.ts  → sendMessage/onMessage tipado
-    logger.ts     → log com prefixo e níveis
-    feature-registry.ts → sistema de features
-  features/       → cada funcionalidade é um módulo isolado
-  shared/         → hooks, UI components, utils
+  background/      # service worker
+  content/         # content script entry
+  popup/           # popup React app
+  options/         # options React app
+  changelog/       # changelog React app (optional)
+  core/            # shared extension primitives
+    config.ts
+    storage.ts
+    messaging.ts
+    logger.ts
+    feature-registry.ts
+  features/        # each feature is isolated
+  shared/          # reusable hooks/ui/utils
 ```
 
-### Sistema de Features
+## Feature System
 
-Toda funcionalidade da extensão é uma **feature** registrada:
+Every extension behavior should be a registered feature:
 
 ```ts
 import { registerFeature } from '@core/feature-registry'
 
 registerFeature({
-  id: 'auto-skip',
-  name: 'Auto Skip',
-  description: '...',
+  id: 'my-feature',
+  name: 'My Feature',
+  description: 'What it does',
   defaultEnabled: false,
-  run: () => { ... },
-  cleanup: () => { ... },
+  run: () => {},
+  cleanup: () => {},
 })
 ```
 
-- Features aparecem automaticamente no popup com toggle on/off
-- Estado persistido em `chrome.storage.sync`
-- Background executa `runFeatures()` no startup
-- Content scripts verificam `isFeatureEnabled(id)` antes de rodar
+- Feature flags are stored in `chrome.storage.sync`
+- Popup reads registered features and renders toggles automatically
+- Content scripts should check `isFeatureEnabled(id)` before running logic
 
-### Aliases
+## Aliases
 
-- `@core/*` → `src/core/*`
-- `@shared/*` → `src/shared/*`
+- `@core/*` -> `src/core/*`
+- `@shared/*` -> `src/shared/*`
 
-### Build
+## CLI
 
-- `npm run dev` → desenvolvimento (Vite watch)
-- `npm run build` → build de produção
-- `npm run zip` → gera zip para Chrome Web Store
-
-### Changelog
-
-A página de changelog (`changelog.html`) é opcional. Quando habilitada:
-- É acessível via link no popup
-- Mostra histórico de versões com badges (Feature, Fix, Chore, Refactor)
-- Usa as mesmas chaves i18n
-
-O build usa múltiplos configs:
-- `vite.config.ts` → popup + options (HTML pages)
-- `vite.background.config.ts` → background (ES module, inline imports)
-- `vite.content.config.ts` → content (IIFE, inline imports)
-
-## Criar Nova Extensão
-
-Use o CLI:
+Create extension projects from this boilerplate:
 
 ```bash
-npm run create-extension -- nome-da-extensao --description "..." --feature minha-feature --changelog
+npm run create-extension -- <name> --description "..." --feature <feature-id>
 ```
 
-Flags úteis:
-- `--no-popup` — remove popup
-- `--options` — adiciona options page
-- `--no-content` — remove content script
-- `--no-background` — remove background
-- `--no-changelog` — remove página de changelog
+Default output directory is:
 
-Ou interativo:
+- `<current-working-directory>\<name>`
+
+Optional override:
 
 ```bash
-npm run create-extension
+npm run create-extension -- <name> --out "E:\Some\Other\Folder"
 ```
 
-O CLI gera uma cópia do boilerplate com placeholders substituídos.
+Useful flags:
 
-## Adicionar Nova Feature
+- `--no-popup`
+- `--options`
+- `--no-content`
+- `--no-background`
+- `--no-changelog`
 
-1. Criar pasta `src/features/nome-feature/`
-2. Criar `index.ts` com `registerFeature({...})`
-3. (Opcional) Criar `content.ts` para DOM manipulation
-4. Importar em `src/features/index.ts`
-5. Se tiver content script, importar e inicializar em `src/content/index.ts`
+## Build
 
-## Convenções
+- `npm run dev`
+- `npm run build`
+- `npm run zip`
 
-- Nomes: `kebab-case` para IDs, `PascalCase` para componentes
-- Storage keys: `feature:${id}` para estado de features
-- i18n: `_locales/en/messages.json` e `_locales/pt/messages.json`
-- Logger: usa `logger.log/info/warn/error` (respeita `config.debug`)
+Build configs:
 
-## Permissões Comuns
+- `vite.config.ts` (popup/options/changelog)
+- `vite.background.config.ts`
+- `vite.content.config.ts`
 
-- `storage` → já incluso por padrão
-- `activeTab` + `scripting` → injetar scripts dinamicamente
-- `tabs` → ler URLs das abas
-- `host_permissions` → sites específicos (ex: `*://*.youtube.com/*`)
+## OpenCode Rules
 
-## Regras para OpenCode
-
-- Sempre use as aliases `@core/*` e `@shared/*` em vez de paths relativos
-- Sempre registre features via `registerFeature` — nunca crie código solto em background/content
-- Sempre use `logger` em vez de `console.log` diretamente
-- Sempre use `storage` wrapper em vez de `chrome.storage` diretamente
-- Sempre use `t()` para strings visíveis ao usuário (i18n)
-- Prefira criar features modulares em vez de acumular lógica em `background/` ou `content/`
-- Quando criar uma nova extensão via CLI, sempre teste `npm run build` antes de dizer que está pronto
+- Use aliases (`@core`, `@shared`) instead of deep relative paths
+- Prefer `registerFeature` over adding ad-hoc logic in entries
+- Use `@core/logger` instead of raw `console.log`
+- Use `@core/storage` instead of raw `chrome.storage`
+- Keep user-facing text in `_locales/*/messages.json`
+- Validate with `npm run build` after meaningful changes

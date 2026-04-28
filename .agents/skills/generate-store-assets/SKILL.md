@@ -1,83 +1,35 @@
 # Skill: generate-store-assets
 
-## Descrição
+Generates the checklist and copy needed for Chrome Web Store submission.
 
-Gera todos os assets e textos necessários para publicar uma extensão na Chrome Web Store.
+## Required assets
 
-## O que precisa
+1. Short description (max 132 chars)
+2. Full description (features, privacy, permissions)
+3. 1–5 screenshots (1280x800 or 640x400)
+4. Icon set (at least 128x128)
+5. Optional promo images/video
 
-Antes de publicar, você precisa de:
-
-### 1. Descrição curta (máx 132 caracteres)
-
-```
-{{EXTENSION_NAME}} — {{DESC_CURTA}}
-```
-
-Exemplo:
-> YouTube Ad Skipper — Skip ads automatically and enjoy uninterrupted videos.
-
-### 2. Descrição completa
+## Recommended description template
 
 ```
-{{EXTENSION_NAME}} é uma extensão Chrome que {{O_QUE_FAZ}}.
+<Extension Name> helps you <main value>.
 
-✨ Principais recursos:
-• {{FEATURE_1}}
-• {{FEATURE_2}}
-• {{FEATURE_3}}
+Key features:
+- <feature 1>
+- <feature 2>
+- <feature 3>
 
-🔒 Privacidade:
-Esta extensão não coleta dados pessoais. Todas as configurações são armazenadas localmente no seu navegador.
+Privacy:
+No personal data is collected. Settings are stored locally.
 
-📄 Permissões:
-{{LISTAR_PERMISSOES_COM_EXPLICACAO}}
-
-💬 Feedback:
-Encontrou um bug ou tem uma sugestão? Entre em contato pelo GitHub.
+Permissions:
+- <permission>: <why it is needed>
 ```
 
-### 3. Screenshots (obrigatório: 1-5 imagens)
+## Final checklist
 
-- Tamanho: 1280x800 ou 640x400 (proporção 16:10)
-- Formatos: JPEG ou PNG (sem alpha)
-- Mostre o popup, options, ou a feature em ação
-
-### 4. Ícone promocional (opcional)
-
-- Pequeno: 440x280px
-- Grande: 920x680px (recomendado)
-- Marquee: 1400x560px
-
-### 5. Vídeo promocional (opcional)
-
-- YouTube URL, máx 30 segundos
-
-### 6. Categoria
-
-Escolha a mais adequada:
-- Productivity
-- Social & Communication
-- Entertainment
-- Developer Tools
-- etc.
-
-## Checklist antes de enviar
-
-- [ ] Ícone 128x128 em `public/icons/icon.png`
-- [ ] Screenshots em boa resolução
-- [ ] Descrição curta ≤ 132 caracteres
-- [ ] Descrição completa em inglês (obrigatório)
-- [ ] Traduções de descrição para outros idiomas (opcional)
-- [ ] Política de privacidade (URL) se coletar dados
-- [ ] Website URL (opcional)
-- [ ] Preço: Gratuito ou Pago
-- [ ] Conta de desenvolvedor Chrome Web Store ($5)
-
-## Comando para gerar ZIP
-
-```bash
-npm run zip
-```
-
-O arquivo gerado em `dist-zip/extension-YYYYMMDD.zip` é o que você sobe na loja.
+- `npm run build` passes
+- `npm run zip` generated upload file
+- Store copy is written in English
+- Permission justifications are explicit
